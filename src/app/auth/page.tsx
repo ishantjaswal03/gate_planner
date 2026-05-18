@@ -9,33 +9,42 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const router = useRouter();
+
+  const envMissing = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    let error;
-    if (isLogin) {
-      const res = await supabase.auth.signInWithPassword({ email, password });
-      error = res.error;
-    } else {
-      const res = await supabase.auth.signUp({ email, password });
-      error = res.error;
-      
-      if (!error && !res.data.session) {
-        alert("Registration Successful! Please check your email to verify your account. (Or disable 'Confirm Email' in your Supabase Auth settings to skip this step).");
-        setLoading(false);
-        return;
-      }
-    }
+    setErrorMsg("");
+    setSuccessMsg("");
 
-    setLoading(false);
-    
-    if (error) {
-      alert(error.message);
-    } else {
-      router.push("/");
+    try {
+      if (isLogin) {
+        const res = await supabase.auth.signInWithPassword({ email, password });
+        if (res.error) {
+          setErrorMsg(res.error.message);
+        } else {
+          router.push("/");
+        }
+      } else {
+        const res = await supabase.auth.signUp({ email, password });
+        if (res.error) {
+          setErrorMsg(res.error.message);
+        } else if (!res.data.session) {
+          setSuccessMsg("Registration Successful! Check your email to verify your account.");
+        } else {
+          router.push("/");
+        }
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error("Auth error:", err);
+      setErrorMsg(`Network error: ${message}. Check your internet connection and Supabase configuration.`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,6 +54,25 @@ export default function AuthPage() {
         <h1 className="text-3xl font-black uppercase mb-6 text-center">
           {isLogin ? "Enter the Matrix" : "Register Node"}
         </h1>
+
+        {envMissing && (
+          <div className="mb-4 p-3 bg-yellow-100 border-4 border-yellow-500 text-yellow-800 font-bold text-sm">
+            ⚠️ Supabase environment variables are missing. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your Vercel environment variables and redeploy.
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-100 border-4 border-red-500 text-red-800 font-bold text-sm">
+            ❌ {errorMsg}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-4 p-3 bg-green-100 border-4 border-green-500 text-green-800 font-bold text-sm">
+            ✅ {successMsg}
+          </div>
+        )}
+
         <form onSubmit={handleAuth} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label className="font-bold text-sm uppercase">Email</label>
