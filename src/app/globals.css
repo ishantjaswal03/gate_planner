@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-neo-bg: #f2e2d9; /* Muted vintage paper */
+  --color-neo-black: #000000;
+  --color-neo-blue: #3080e8;
+  --color-neo-green: #30e849;
+  --color-neo-red: #e83a30;
+  
+  --shadow-neo: 8px 8px 0px rgba(0,0,0,1);
+  --shadow-neo-sm: 4px 4px 0px rgba(0,0,0,1);
+  --shadow-neo-hover: 0px 0px 0px rgba(0,0,0,1);
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--color-neo-bg)] text-black font-sans;
+  }
+}
+
+@layer utilities {
+  .neo-border {
+    @apply border-4 border-black;
+  }
+  .neo-shadow {
+    @apply shadow-[var(--shadow-neo)];
+  }
+  .neo-shadow-sm {
+    @apply shadow-[var(--shadow-neo-sm)];
+  }
+  .neo-hover {
+    @apply hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-[var(--shadow-neo-sm)] transition-all duration-100 ease-in-out;
+  }
+  .neo-card {
+    @apply border-4 border-black shadow-[var(--shadow-neo)] rounded-none p-6;
+  }
+  .neo-button {
+    @apply border-4 border-black shadow-[var(--shadow-neo-sm)] font-bold px-4 py-2 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 ease-in-out active:scale-95;
+  }
+}
